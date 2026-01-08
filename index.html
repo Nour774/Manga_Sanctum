@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>النادي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Tahoma", sans-serif;
+      background: #0e0e11;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* ===== الشريط العلوي ===== */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: #1a1a1d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+      z-index: 1000;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+      background: linear-gradient(90deg, #ffcc70, #e15a97);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .top-nav span {
+      cursor: pointer;
+      font-weight: normal;
+      color: #ccc;
+      transition: 0.3s;
+      position: relative;
+    }
+
+    .top-nav span:hover {
+      color: #ffcc70;
+    }
+
+    /* الرابط النشط */
+    .top-nav span.active {
+      color: #ffcc70;
+      font-weight: bold;
+    }
+
+    .top-nav span.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -3px;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #ffcc70, #e15a97);
+      border-radius: 3px;
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      0% { opacity: 0.5; transform: scaleX(0.9); }
+      50% { opacity: 1; transform: scaleX(1.05); }
+      100% { opacity: 0.5; transform: scaleX(0.9); }
+    }
+
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+      color: #ffcc70;
+    }
+
+    /* ===== القائمة الجانبية ===== */
+    .side-menu {
+      position: fixed;
+      right: -230px;
+      top: 0;
+      width: 230px;
+      height: 100vh;
+      background: rgba(25, 25, 30, 0.98);
+      transition: right 0.3s ease-in-out;
+      padding: 30px 20px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+      z-index: 999;
+      backdrop-filter: blur(6px);
+    }
+
+    .side-menu.open {
+      right: 0;
+    }
+
+    .side-menu h3 {
+      margin-bottom: 25px;
+      font-size: 18px;
+      color: #ffcc70;
+    }
+
+    .side-menu .link {
+      display: block;
+      margin: 15px 0;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ffcc70, #e15a97);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      transition: opacity 0.3s;
+    }
+
+    .side-menu .link:hover {
+      opacity: 0.7;
+    }
+
+    /* ===== الصورة الرئيسية ===== */
+    .hero {
+      margin-top: 70px;
+      width: 100%;
+      max-height: 280px;
+      overflow: hidden;
+    }
+
+    .hero img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+
+    /* ===== المحتوى ===== */
+    .content {
+      padding: 25px;
+      text-align: center;
+    }
+
+    .profile-pic {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ffcc70;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .profile-pic:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #ffcc70;
+    }
+
+    /* ===== النافذة المنبثقة ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      flex-direction: column;
+    }
+
+    .modal img {
+      max-width: 85%;
+      max-height: 80%;
+      border-radius: 10px;
+      border: 3px solid #ffcc70;
+    }
+
+    .modal button {
+      margin-top: 15px;
+      padding: 8px 18px;
+      background: #ffcc70;
+      border: none;
+      border-radius: 6px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .modal button:hover {
+      background: #ffd98e;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 17px; }
+      .top-nav span { font-size: 13px; }
+      .profile-pic { width: 60px; height: 60px; }
+      .side-menu { width: 180px; padding: 20px 15px; }
+    }
+    
+     /*  ستايل نافذة الإعلانات  */
+     
+     .hero {
+  position: relative;
+}
+
+.announcement {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  padding: 15px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 204, 112, 0.6);
+  max-width: 300px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+.announcement-title {
+  font-weight: bold;
+  color: #ffcc70;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.announcement-content {
+  font-size: 14px;
+  color: #eee;
+  line-height: 1.6;
+}
+     
+  </style>
+</head>
+<body>
+  <header>
+    <span class="menu-icon" onclick="toggleMenu()">☰</span>
+    <h1>النادي</h1>
+    <div class="top-nav">
+      <span id="homeLink" onclick="goToPage('home')">الرئيسية</span>
+      <span id="libraryLink" onclick="goToPage('library')">المكتبة</span>
+      <span id="chatsLink" onclick="goToPage('chats')">الدردشات</span>
+      <img id="userAvatar" class="profile-pic" src="images/user-avatar.jpg" alt="صورة البروفايل" onclick="openModal()">
+    </div>
+  </header>
+
+  <div class="side-menu" id="sideMenu">
+    <h3>القائمة</h3>
+    <span class="link" onclick="goToMembers()">أعضاء النادي</span>
+    <span id="adminLink" class="link" style="display:none;" onclick="goToAdmin()">لوحة التحكم</span>
+    <span class="link" onclick="logout()">تسجيل الخروج</span>
+  </div>
+
+  <div class="hero">
+    <img src="imag1.jpg" alt="صورة المقدمة">
+   <!-- نافذة الإعلانات -->  
+   
+  
+
+  <div class="announcement">
+    <div class="announcement-title">
+      ⚠ إعلان هام
+    </div>
+         <!-- محتوى الإعلان من طرف هذا المبجل -->
+    <div class="announcement-content">
+      هنا تكتب نص الإعلان الذي تريده، ويمكن أن يكون طويلاً أو قصيرًا.
+    </div>
+  </div>
+
+   
+    
+    
+  </div>
+
+  <div class="content">
+  
+    
+     <!-- محتوى الصفحة ★ -->
+                   <h1>hello world</h1>
+     
+          <!-- ★1★ -->
+  </div>
+
+  <!-- نافذة عرض الصورة -->
+  <div class="modal" id="imageModal" onclick="closeModal(event)">
+    <img id="modalImage" src="">
+    <button onclick="resetAvatar()">إعادة التعيين</button>
+  </div>
+
+  <script>
+    // القائمة الجانبية
+    function toggleMenu() {
+      document.getElementById('sideMenu').classList.toggle('open');
+    }
+
+    // الروابط وتحديث الرابط النشط
+    function goToPage(page) {
+      document.querySelectorAll('.top-nav span').forEach(link => {
+        link.classList.remove('active');
+      });
+
+      if(page === 'home') document.getElementById('homeLink').classList.add('active');
+      if(page === 'library') document.getElementById('libraryLink').classList.add('active');
+      if(page === 'chats') document.getElementById('chatsLink').classList.add('active');
+
+      // مثال توجيه الصفحة
+      if(page === 'home') window.location.href = 'index.html';
+      if(page === 'library') window.location.href = 'library.html';
+      if(page === 'chats') window.location.href = 'chats.html';
+    }
+
+    // عند فتح الموقع
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('homeLink').classList.add('active');
+    });
+
+    // النوافذ المنبثقة
+    function openModal() {
+      const modal = document.getElementById('imageModal');
+      const img = document.getElementById('userAvatar');
+      const modalImg = document.getElementById('modalImage');
+      modal.style.display = 'flex';
+      modalImg.src = img.src || 'images/default-avatar.png';
+    }
+
+    function closeModal(e) {
+      if(e.target.id === 'imageModal') e.target.style.display = 'none';
+    }
+
+    function resetAvatar() {
+      const img = document.getElementById('userAvatar');
+      img.src = 'images/default-avatar.png';
+      closeModal({target: document.getElementById('imageModal')});
+    }
+
+    // إظهار لوحة التحكم للمسؤولين
+    const isAdmin = true; // يمكن تغييره حسب حالة تسجيل الدخول
+    if(isAdmin) document.getElementById('adminLink').style.display = 'block';
+
+    // روابط القائمة الجانبية
+    function goToMembers() { window.location.href = 'members.html'; }
+    function goToAdmin() { window.location.href = 'admin.html'; }
+    function logout() { alert('تم تسجيل الخروج!'); window.location.href = 'login.html'; }
+
+
+  </script>
+</body>
+  </html>
