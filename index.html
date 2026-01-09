@@ -238,6 +238,64 @@
   color: #eee;
   line-height: 1.6;
 }
+
+/* =====  (Footer) تذييل الموقع ===== */
+.site-footer {
+  background: #151518;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 40px;
+  padding: 30px 20px 15px;
+  font-size: 14px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.footer-section {
+  flex: 1;
+  min-width: 200px;
+}
+
+.footer-section h4 {
+  color: #ffcc70;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.footer-section p {
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.footer-section span {
+  display: block;
+  color: #ccc;
+  cursor: pointer;
+  margin: 6px 0;
+  transition: 0.3s;
+}
+
+.footer-section span:hover {
+  color: #ffcc70;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  color: #888;
+  font-size: 13px;
+}
+
+
+
      
   </style>
 </head>
@@ -246,9 +304,9 @@
     <span class="menu-icon" onclick="toggleMenu()">☰</span>
     <h1>النادي</h1>
     <div class="top-nav">
-      <span id="homeLink" onclick="goToPage('home')">الرئيسية</span>
-      <span id="libraryLink" onclick="goToPage('library')">المكتبة</span>
-      <span id="chatsLink" onclick="goToPage('chats')">الدردشات</span>
+                    <span data-page="1" onclick="goToPage(1)">الرئيسية</span>
+                    <span data-page="2" onclick="goToPage(2)">المكتبة</span>
+                    <span data-page="3" onclick="goToPage(3)">الدردشات</span>
       <img id="userAvatar" class="profile-pic" src="images/user-avatar.jpg" alt="صورة البروفايل" onclick="openModal()">
     </div>
   </header>
@@ -286,7 +344,57 @@
     
      <!-- محتوى الصفحة ★ -->
                    <h1>hello world</h1>
-     
+                   
+     <section class="club-header">
+  <h2>النادي</h2>
+  <p class="club-status">
+    الحالة العامة: <span class="status-online">نشط</span>
+  </p>
+</section>
+
+<section class="club-stats">
+  <div class="stat-box">
+    <span class="stat-number">128</span>
+    <span class="stat-label">عضو</span>
+  </div>
+
+  <div class="stat-box">
+    <span class="stat-number">56</span>
+    <span class="stat-label">مقالة</span>
+  </div>
+
+  <div class="stat-box">
+    <span class="stat-number">14</span>
+    <span class="stat-label">نقاش نشط</span>
+  </div>
+</section>
+
+<section class="club-activity">
+  <h3>آخر نشاط</h3>
+
+  <div class="activity-item">
+    <span class="activity-dot"></span>
+    <p>تمت إضافة مقال جديد إلى المكتبة</p>
+  </div>
+
+  <div class="activity-item">
+    <span class="activity-dot"></span>
+    <p>نقاش جديد بدأ في قسم الدردشات</p>
+  </div>
+
+  <div class="activity-item">
+    <span class="activity-dot"></span>
+    <p>انضم عضو جديد إلى النادي</p>
+  </div>
+</section>
+
+<section class="club-meta">
+  <p>
+    واجهة النادي — الصفحة ذات الرقم التعريفي
+    <strong>#<span id="homePageId"></span></strong>
+  </p>
+</section>
+
           <!-- ★1★ -->
   </div>
 
@@ -295,33 +403,58 @@
     <img id="modalImage" src="">
     <button onclick="resetAvatar()">إعادة التعيين</button>
   </div>
+                    <!-- javascript: fonction- $#@ -->
+
+                    <script>
+  const PAGE_ID = 2; //  معرف الصفحة : id = 1
+
+ window.addEventListener('DOMContentLoaded', () => {
+  const footerId = document.getElementById('footerPageId');
+  if (footerId) {
+    footerId.textContent = PAGE_ID;
+  }
+});   // $ دالة ربط معرف الصفحة بال Footer
+
+</script>
 
   <script>
+
     // القائمة الجانبية
     function toggleMenu() {
       document.getElementById('sideMenu').classList.toggle('open');
     }
 
     // الروابط وتحديث الرابط النشط
-    function goToPage(page) {
-      document.querySelectorAll('.top-nav span').forEach(link => {
-        link.classList.remove('active');
-      });
 
-      if(page === 'home') document.getElementById('homeLink').classList.add('active');
-      if(page === 'library') document.getElementById('libraryLink').classList.add('active');
-      if(page === 'chats') document.getElementById('chatsLink').classList.add('active');
 
-      // مثال توجيه الصفحة
-      if(page === 'home') window.location.href = 'index.html';
-      if(page === 'library') window.location.href = 'library.html';
-      if(page === 'chats') window.location.href = 'chats.html';
+          function activatePage(pageId) {
+  document.querySelectorAll('.top-nav span').forEach(link => {
+    link.classList.remove('active');
+    if (Number(link.dataset.page) === pageId) {
+      link.classList.add('active');
     }
+  });
+}
+
+function goToPage(pageId) {
+  activatePage(pageId);
+
+  if (pageId === 1) window.location.href = 'index.html';
+  if (pageId === 2) window.location.href = 'library.html';
+  if (pageId === 3) window.location.href = 'chats.html';
+}
+
+         
+
+        
+
+
 
     // عند فتح الموقع
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('homeLink').classList.add('active');
-    });
+      activatePage(PAGE_ID);
+      });
+
 
     // النوافذ المنبثقة
     function openModal() {
@@ -353,5 +486,34 @@
 
 
   </script>
+
+<!-- Footer -->
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-section">
+      <h4>النادي</h4>
+      <p>منصة تجمع الأعضاء، المعرفة، والنقاش في مكان واحد.</p>
+    </div>
+
+    <div class="footer-section">
+      <h4>التنقل</h4>
+      <span onclick="goToPage(1)">الرئيسية</span>
+      <span onclick="goToPage(2)">المكتبة</span>
+      <span onclick="goToPage(3)">الدردشات</span>
+    </div>
+
+    <div class="footer-section">
+      <h4>معلومات</h4>
+      <p>الصفحة الحالية: <strong>#<span id="footerPageId"></span></strong></p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 — جميع الحقوق محفوظة
+  </div>
+</footer>
+
+
 </body>
   </html>
