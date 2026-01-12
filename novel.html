@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تفاصيل الرواية</title>
+<style>
+body { font-family: Arial; background:#f2f2f2; margin:0; padding:0;}
+header { background:#333; color:white; padding:10px; text-align:center; }
+.container { max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:5px; }
+h1 { margin-top:0; }
+ul { list-style:none; padding:0;}
+li { margin-bottom:5px; }
+a { color:#333; text-decoration:none; }
+a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<header><h1>تفاصيل الرواية</h1></header>
+<div class="container" id="novel-details">
+Loading...
+</div>
+
+<script>
+function getSlug() {
+    return new URLSearchParams(window.location.search).get("slug");
+}
+
+async function loadNovel(slug) {
+    const resp = await fetch(`https://api.rewayat.club/api/novels/?slug=${slug}`);
+    const data = await resp.json();
+    const novel = data.results.find(n => n.slug === slug);
+    if(!novel) return document.getElementById("novel-details").innerHTML = "الرواية غير موجودة";
+
+    const container = document.getElementById("novel-details");
+    container.innerHTML = `
+        <h1>${novel.arabic}</h1>
+        <p><strong>الإنجليزية:</strong> ${novel.english}</p>
+        <p>${novel.about}</p>
+        <p>عدد الفصول: ${novel.num_chapters}</p>
+        <p>الحالة: ${novel.complete ? "مكتملة" : "جارية"}</p>
+        <h3>الفصول</h3>
+        <ul id="chapters-list">تحميل الفصول...</ul>
+    `;
+
+    // توليد رابط الفصول (بشكل تجريبي: الفصل 1..)
+    const chaptersList = document.getElementById("chapters-list");
+    chaptersList.innerHTML = "";
+    for(let i=1;i<=novel.num_chapters;i++){
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="chapter.html?slug=${novel.slug}&chapter=${i}">الفصل ${i}</a>`;
+        chaptersList.appendChild(li);
+    }
+}
+
+// تشغيل
+const slug = getSlug();
+loadNovel(slug);
+</script>
+
+</body>
+</html>

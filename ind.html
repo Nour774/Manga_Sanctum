@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مكتبة الروايات</title>
+<style>
+body { font-family: Arial; background: #f2f2f2; margin:0; padding:0;}
+header { background:#333; color:white; padding:10px; text-align:center; }
+.container { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:10px; padding:10px;}
+.novel-card { background:white; padding:10px; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+.novel-card img { width:100%; border-radius:5px;}
+button { background:#333; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;}
+button:hover { background:#555; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>مكتبة الروايات</h1>
+</header>
+
+<div class="container" id="novel-list">
+Loading novels...
+</div>
+
+<script>
+async function fetchNovels() {
+    let url = "https://api.rewayat.club/api/novels/";
+    let all = [];
+    while (url) {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        all = all.concat(data.results);
+        url = data.next;
+    }
+    return all;
+}
+
+function displayNovels(novels) {
+    const container = document.getElementById("novel-list");
+    container.innerHTML = "";
+    novels.forEach(novel => {
+        const div = document.createElement("div");
+        div.className = "novel-card";
+        div.innerHTML = `
+            <img src="https://api.rewayat.club${novel.poster_url}" alt="${novel.arabic}" />
+            <h3>${novel.arabic}</h3>
+            <p>عدد الفصول: ${novel.num_chapters}</p>
+            <button onclick="location.href='novel.html?slug=${novel.slug}'">عرض التفاصيل</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// تشغيل
+fetchNovels().then(displayNovels);
+</script>
+
+</body>
+</html>
