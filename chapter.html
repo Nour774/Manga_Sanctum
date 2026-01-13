@@ -1,32 +1,42 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>قراءة الفصل</title>
-<style>
-body { font-family: Arial; background:#f2f2f2; margin:0; padding:0;}
-header { background:#333; color:white; padding:10px; text-align:center; }
-.container { max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:5px; line-height:1.6; }
-</style>
+  <meta charset="UTF-8">
+  <title>قراءة الفصل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; }
+    header { padding:16px; text-align:center; background:#16161d; font-size:20px; font-weight:bold; }
+    main { padding:16px; line-height:1.6; }
+  </style>
 </head>
 <body>
-<header><h1>قراءة الفصل</h1></header>
-<div class="container" id="chapter-content">
-Loading chapter...
-</div>
+<header>📖 قراءة الفصل</header>
+<main id="content">جاري التحميل...</main>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const slug = params.get("slug");
-const chapterNum = params.get("chapter");
+const apiBase = "https://api.rewayat.club";
 
-// ملاحظة: API الرسمي لا يوفر نص الفصل، لذلك سنضع مثالًا مؤقتًا
-document.getElementById("chapter-content").innerHTML = `
-<h2>رواية: ${slug}</h2>
-<p>الفصل ${chapterNum}</p>
-<p>نص الفصل غير متاح في API، هذا مجرد عرض تجريبي.</p>
-`;
+function getParams() {
+  const params = new URLSearchParams(window.location.search);
+  return { slug: params.get("slug"), chapter: params.get("chapter") };
+}
+
+async function loadChapter() {
+  const {slug, chapter} = getParams();
+  if (!slug || !chapter) return;
+
+  const res = await fetch(`${apiBase}/api/novels/${slug}/chapters/${chapter}/`);
+  const ch = await res.json();
+
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <h1>${ch.title}</h1>
+    <div>${ch.content.replace(/\n/g,"<br>")}</div>
+  `;
+}
+
+loadChapter();
 </script>
-
 </body>
 </html>
