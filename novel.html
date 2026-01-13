@@ -1,72 +1,175 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>تفاصيل الرواية</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; padding:16px; }
-.poster { width:100%; max-width:300px; display:block; margin:auto; border-radius:12px; }
-h1 { text-align:center; margin:16px 0; }
-.meta, .about, .tags, .chapters { margin-top:16px; }
-.tags span { background:#29293b; padding:4px 8px; margin:2px; border-radius:6px; display:inline-block; }
-.chapters li { cursor:pointer; padding:4px 0; }
-.chapters li:hover { text-decoration:underline; color:#0af; }
-</style>
+  <meta charset="UTF-8">
+  <title>2تفاصيل الرواية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #0f0f12;
+      color: #eee;
+    }
+
+    header {
+      padding: 16px;
+      text-align: center;
+      background: #16161d;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 16px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #bbb;
+      margin-bottom: 12px;
+    }
+
+    .description {
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .tags {
+      margin-bottom: 16px;
+    }
+
+    .tags span {
+      display: inline-block;
+      background: #292932;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .chapters ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .chapters li {
+      background: #1b1b24;
+      margin-bottom: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .chapters li:hover {
+      transform: translateX(4px);
+      background: #2a2a35;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #aaa;
+    }
+
+  </style>
 </head>
 <body>
 
-<div id="content">جاري التحميل...</div>
+<header>📖 تفاصيل الرواية</header>
+
+<div class="container">
+  <div class="title" id="title"></div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="meta" id="meta"></div>
+  <div class="description" id="description"></div>
+
+  <div class="tags" id="tags"><strong>الأوسمة:</strong> </div>
+
+  <div class="chapters">
+    <strong>الفصول:</strong>
+    <ul id="chapters"></ul>
+  </div>
+
+  <div id="loading" class="loading">جاري التحميل…</div>
+</div>
 
 <script>
 const apiBase = "https://api.rewayat.club";
+const params = new URLSearchParams(window.location.search);
+const slug = params.get("slug");
 
-function getSlug() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("slug");
-}
+const titleEl = document.getElementById("title");
+const subtitleEl = document.getElementById("subtitle");
+const metaEl = document.getElementById("meta");
+const descriptionEl = document.getElementById("description");
+const tagsEl = document.getElementById("tags");
+const chaptersEl = document.getElementById("chapters");
+const loadingEl = document.getElementById("loading");
 
 async function loadNovel() {
-  const slug = getSlug();
   if (!slug) return;
 
-  const res = await fetch(`${apiBase}/api/novels/${slug}/`);
-  const novel = await res.json();
+  loadingEl.style.display = "block";
 
-  const content = document.getElementById("content");
-  content.innerHTML = `
-    <img class="poster" src="${apiBase + novel.poster_url}" alt="">
-    <h1>${novel.arabic} (${novel.english})</h1>
-    <div class="meta">${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters} فصل</div>
-    <div class="about">${novel.about}</div>
-    <div class="tags"><h3>الأوسمة:</h3></div>
-    <h3>الفصول:</h3>
-    <ul class="chapters" id="chapters"></ul>
-  `;
+  try {
+    const res = await fetch(`${apiBase}/api/novels/${slug}/`);
+    if (!res.ok) throw new Error("فشل تحميل الرواية");
 
-  // الأوسمة
-  const tagsDiv = content.querySelector(".tags");
-  if (novel.genre && novel.genre.length > 0) {
-    novel.genre.forEach(g => {
-      const span = document.createElement("span");
-      span.textContent = g;
-      tagsDiv.appendChild(span);
-    });
+    const novel = await res.json();
+
+    titleEl.textContent = novel.arabic;
+    subtitleEl.textContent = novel.english;
+    metaEl.textContent = `${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters || "?"} فصل`;
+    descriptionEl.textContent = novel.about || "لا يوجد وصف متاح.";
+
+    // الأوسمة
+    tagsEl.innerHTML = "<strong>الأوسمة:</strong> ";
+    if (novel.genre && novel.genre.length > 0) {
+      novel.genre.forEach(g => {
+        const span = document.createElement("span");
+        span.textContent = g.name; // الاسم فقط
+        tagsEl.appendChild(span);
+      });
+    } else {
+      tagsEl.innerHTML += "لا توجد أوسمة";
+    }
+
+    // الفصول
+    chaptersEl.innerHTML = "";
+    if (novel.chapters && novel.chapters.length > 0) {
+      novel.chapters.forEach(ch => {
+        const li = document.createElement("li");
+        li.textContent = ch.title;
+        li.addEventListener("click", () => {
+          window.location.href = `chapter.html?slug=${slug}&chapter=${ch.number}`;
+        });
+        chaptersEl.appendChild(li);
+      });
+    } else {
+      chaptersEl.innerHTML = "<li>لا توجد فصول متاحة</li>";
+    }
+
+  } catch (err) {
+    console.error(err);
+    descriptionEl.textContent = "حدث خطأ أثناء تحميل الرواية.";
+  } finally {
+    loadingEl.style.display = "none";
   }
-
-  // جلب الفصول
-  const chaptersRes = await fetch(`${apiBase}/api/novels/${slug}/chapters/`);
-  const chaptersData = await chaptersRes.json();
-
-  const chaptersList = document.getElementById("chapters");
-  chaptersData.results.forEach(ch => {
-    const li = document.createElement("li");
-    li.textContent = ch.title;
-    li.addEventListener("click", () => {
-      window.location.href = `chapter.html?slug=${slug}&chapter=${ch.number}`;
-    });
-    chaptersList.appendChild(li);
-  });
 }
 
 loadNovel();
