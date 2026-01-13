@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مكتبة روايات Rewayat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; }
+    header { padding:16px; text-align:center; background:#16161d; font-size:20px; font-weight:bold; }
+    #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; padding:16px; }
+    .card { background:#1b1b24; border-radius:12px; overflow:hidden; display:flex; flex-direction:column; transition: transform 0.2s; cursor:pointer; }
+    .card:hover { transform:translateY(-4px); }
+    .card img { width:100%; height:230px; object-fit:cover; background:#000; }
+    .card .info { padding:10px; flex:1; }
+    .title { font-size:14px; font-weight:bold; margin-bottom:4px; }
+    .subtitle { font-size:12px; color:#aaa; }
+    .meta { font-size:11px; margin-top:6px; color:#bbb; }
+    .loading { text-align:center; padding:20px; color:#aaa; }
+  </style>
+</head>
+<body>
+
+<header>📚 مكتبة روايات_سرقت بيانات من سيرفر موقع آخرRewayat</header>
+<div id="grid"></div>
+<div id="loading" class="loading">جاري التحميل…</div>
+
+<script>
+/* ===== إعدادات API + Proxy ===== */
+const apiBase = "https://api.rewayat.club";
+const proxy = "https://corsproxy.io/?";
+
+function proxiedUrl(url) {
+  return proxy + encodeURIComponent(url);
+}
+
+/* ================================= */
+
+let nextUrl = apiBase + "/api/novels/";
+const grid = document.getElementById("grid");
+const loading = document.getElementById("loading");
+
+async function loadPage() {
+  if (!nextUrl) return;
+  loading.style.display = "block";
+
+  const res = await fetch(proxiedUrl(nextUrl));
+  const data = await res.json();
+
+  data.results.forEach(novel => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const img = document.createElement("img");
+    img.src = proxiedUrl(apiBase + novel.poster_url);
+    img.loading = "lazy";
+
+    const info = document.createElement("div");
+    info.className = "info";
+    info.innerHTML = `
+      <div class="title">${novel.arabic}</div>
+      <div class="subtitle">${novel.english}</div>
+      <div class="meta">
+        ${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters} فصل
+      </div>
+    `;
+
+    card.appendChild(img);
+    card.appendChild(info);
+
+    card.addEventListener("click", () => {
+      window.location.href = `novel.html?slug=${novel.slug}`;
+    });
+
+    grid.appendChild(card);
+  });
+
+  nextUrl = data.next;
+  loading.style.display = "none";
+}
+
+window.addEventListener("scroll", () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+    loadPage();
+  }
+});
+
+loadPage();
+</script>
+</body>
+  </html>
