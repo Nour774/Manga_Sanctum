@@ -1,61 +1,66 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>تفاصيل الرواية</title>
-<style>
-body { font-family: Arial; background:#f2f2f2; margin:0; padding:0;}
-header { background:#333; color:white; padding:10px; text-align:center; }
-.container { max-width:800px; margin:20px auto; background:white; padding:20px; border-radius:5px; }
-h1 { margin-top:0; }
-ul { list-style:none; padding:0;}
-li { margin-bottom:5px; }
-a { color:#333; text-decoration:none; }
-a:hover { text-decoration:underline; }
-</style>
+  <meta charset="UTF-8">
+  <title>تفاصيل الرواية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; }
+    header { padding:16px; text-align:center; background:#16161d; font-size:20px; font-weight:bold; }
+    main { padding:16px; }
+    .poster { width:200px; height:300px; object-fit:cover; float:right; margin-left:16px; border-radius:8px; }
+    h1 { margin-top:0; }
+    .meta { color:#bbb; margin-bottom:12px; }
+    .about { margin-bottom:16px; }
+    ul.chapters { list-style:none; padding:0; }
+    ul.chapters li { margin-bottom:8px; cursor:pointer; padding:6px; background:#1b1b24; border-radius:6px; transition:0.2s; }
+    ul.chapters li:hover { background:#2a2a38; }
+  </style>
 </head>
 <body>
-<header><h1>تفاصيل الرواية</h1></header>
-<div class="container" id="novel-details">
-Loading...
-</div>
+<header>📖 تفاصيل الرواية</header>
+<main id="content">
+  جاري التحميل...
+</main>
 
 <script>
+const apiBase = "https://api.rewayat.club";
+
 function getSlug() {
-    return new URLSearchParams(window.location.search).get("slug");
+  return new URLSearchParams(window.location.search).get("slug");
 }
 
-async function loadNovel(slug) {
-    const resp = await fetch(`https://api.rewayat.club/api/novels/?slug=${slug}`);
-    const data = await resp.json();
-    const novel = data.results.find(n => n.slug === slug);
-    if(!novel) return document.getElementById("novel-details").innerHTML = "الرواية غير موجودة";
+async function loadNovel() {
+  const slug = getSlug();
+  if (!slug) return;
 
-    const container = document.getElementById("novel-details");
-    container.innerHTML = `
-        <h1>${novel.arabic}</h1>
-        <p><strong>الإنجليزية:</strong> ${novel.english}</p>
-        <p>${novel.about}</p>
-        <p>عدد الفصول: ${novel.num_chapters}</p>
-        <p>الحالة: ${novel.complete ? "مكتملة" : "جارية"}</p>
-        <h3>الفصول</h3>
-        <ul id="chapters-list">تحميل الفصول...</ul>
-    `;
+  const res = await fetch(`${apiBase}/api/novels/${slug}/`);
+  const novel = await res.json();
 
-    // توليد رابط الفصول (بشكل تجريبي: الفصل 1..)
-    const chaptersList = document.getElementById("chapters-list");
-    chaptersList.innerHTML = "";
-    for(let i=1;i<=novel.num_chapters;i++){
-        const li = document.createElement("li");
-        li.innerHTML = `<a href="chapter.html?slug=${novel.slug}&chapter=${i}">الفصل ${i}</a>`;
-        chaptersList.appendChild(li);
-    }
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <img class="poster" src="${apiBase + novel.poster_url}" alt="">
+    <h1>${novel.arabic} (${novel.english})</h1>
+    <div class="meta">
+      ${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters} فصل
+    </div>
+    <div class="about">${novel.about}</div>
+    <h3>الفصول:</h3>
+    <ul class="chapters" id="chapters"></ul>
+  `;
+
+  const chaptersList = document.getElementById("chapters");
+  novel.chapters.forEach(ch => {
+    const li = document.createElement("li");
+    li.textContent = ch.title;
+    li.addEventListener("click", () => {
+      window.location.href = `chapter.html?slug=${slug}&chapter=${ch.number}`;
+    });
+    chaptersList.appendChild(li);
+  });
 }
 
-// تشغيل
-const slug = getSlug();
-loadNovel(slug);
+loadNovel();
 </script>
-
 </body>
 </html>
