@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>تفاصيل الرواية</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; }
-    header { padding:16px; text-align:center; background:#16161d; font-size:20px; font-weight:bold; }
-    main { padding:16px; }
-    .poster { width:200px; height:300px; object-fit:cover; float:right; margin-left:16px; border-radius:8px; }
-    h1 { margin-top:0; }
-    .meta { color:#bbb; margin-bottom:12px; }
-    .about { margin-bottom:16px; }
-    ul.chapters { list-style:none; padding:0; }
-    ul.chapters li { margin-bottom:8px; cursor:pointer; padding:6px; background:#1b1b24; border-radius:6px; transition:0.2s; }
-    ul.chapters li:hover { background:#2a2a38; }
-  </style>
+<meta charset="UTF-8">
+<title>تفاصيل الرواية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { margin:0; font-family:system-ui,sans-serif; background:#0f0f12; color:#eee; padding:16px; }
+.poster { width:100%; max-width:300px; display:block; margin:auto; border-radius:12px; }
+h1 { text-align:center; margin:16px 0; }
+.meta, .about, .tags, .chapters { margin-top:16px; }
+.tags span { background:#29293b; padding:4px 8px; margin:2px; border-radius:6px; display:inline-block; }
+.chapters li { cursor:pointer; padding:4px 0; }
+.chapters li:hover { text-decoration:underline; color:#0af; }
+</style>
 </head>
 <body>
-<header>📖 تفاصيل الرواية</header>
-<main id="content">
-  جاري التحميل...
-</main>
+
+<div id="content">جاري التحميل...</div>
 
 <script>
 const apiBase = "https://api.rewayat.club";
 
 function getSlug() {
-  return new URLSearchParams(window.location.search).get("slug");
+  const params = new URLSearchParams(window.location.search);
+  return params.get("slug");
 }
 
 async function loadNovel() {
@@ -41,16 +37,29 @@ async function loadNovel() {
   content.innerHTML = `
     <img class="poster" src="${apiBase + novel.poster_url}" alt="">
     <h1>${novel.arabic} (${novel.english})</h1>
-    <div class="meta">
-      ${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters} فصل
-    </div>
+    <div class="meta">${novel.complete ? "مكتملة" : "مستمرة"} · ${novel.num_chapters} فصل</div>
     <div class="about">${novel.about}</div>
+    <div class="tags"><h3>الأوسمة:</h3></div>
     <h3>الفصول:</h3>
     <ul class="chapters" id="chapters"></ul>
   `;
 
+  // الأوسمة
+  const tagsDiv = content.querySelector(".tags");
+  if (novel.genre && novel.genre.length > 0) {
+    novel.genre.forEach(g => {
+      const span = document.createElement("span");
+      span.textContent = g;
+      tagsDiv.appendChild(span);
+    });
+  }
+
+  // جلب الفصول
+  const chaptersRes = await fetch(`${apiBase}/api/novels/${slug}/chapters/`);
+  const chaptersData = await chaptersRes.json();
+
   const chaptersList = document.getElementById("chapters");
-  novel.chapters.forEach(ch => {
+  chaptersData.results.forEach(ch => {
     const li = document.createElement("li");
     li.textContent = ch.title;
     li.addEventListener("click", () => {
@@ -62,5 +71,6 @@ async function loadNovel() {
 
 loadNovel();
 </script>
+
 </body>
 </html>
