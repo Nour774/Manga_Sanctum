@@ -1,0 +1,79 @@
+<!DOCTYPE html><html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>موقع كتب بسيط</title>
+  <script src="https://www.google.com/books/jsapi.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    header {
+      background: #4a6cf7;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px;
+    }
+    .container {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+    }
+    .books-list {
+      width: 30%;
+    }
+    .books-list button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .books-list button:hover {
+      background: #e0e7ff;
+    }
+    #viewerCanvas {
+      width: 70%;
+      height: 500px;
+      background: #fff;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>  <header>
+    <h1>📚 مكتبة Google البسيطة</h1>
+    <p>اضغط على أي كتاب لعرض المعاينة</p>
+  </header>  <div class="container">
+    <div class="books-list">
+      <button onclick="loadBook('ISBN:0738531367')">Mountain View</button>
+      <button onclick="loadBook('ISBN:9780140449136')">The Odyssey</button>
+      <button onclick="loadBook('ISBN:9780061120084')">To Kill a Mockingbird</button>
+    </div><div id="viewerCanvas"></div>
+
+  </div>  <script>
+    google.books.load({ language: 'ar' });
+
+    let viewer;
+
+    function initialize() {
+      viewer = new google.books.DefaultViewer(
+        document.getElementById('viewerCanvas')
+      );
+      viewer.load('ISBN:0738531367');
+    }
+
+    function loadBook(isbn) {
+      if (viewer) {
+        viewer.load(isbn);
+      }
+    }
+
+    google.books.setOnLoadCallback(initialize);
+  </script></body>
+</html>
