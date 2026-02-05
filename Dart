@@ -1,0 +1,139 @@
+//yaml
+//
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^1.0.7
+  http: ^1.2.0
+
+// main.dart
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: ImageTestPage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class ImageTestPage extends StatefulWidget {
+  const ImageTestPage({super.key});
+
+  @override
+  State<ImageTestPage> createState() => _ImageTestPageState();
+}
+
+class _ImageTestPageState extends State<ImageTestPage> {
+  File? _image;
+  String _result = "النتيجة ستظهر هنا";
+  bool _loading = false;
+
+  final picker = ImagePicker();
+
+  Future<void> pickImage() async {
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _image = File(picked.path);
+        _result = "تم اختيار الصورة";
+      });
+    }
+  }
+
+  Future<void> sendToKimi() async {
+    if (_image == null) return;
+
+    setState(() => _loading = true);
+
+    final bytes = await _image!.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    final response = await http.post(
+      Uri.parse("https://api.moonshot.cn/v1/chat/completions"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer YOUR_KIMI_API_KEY"
+      },
+      body: jsonEncode({
+        "model": "kimi-2.5",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "حلل هذه الصورة وقل لي ماذا ترى"
+              },
+              {
+                "type": "image_base64",
+                "image_base64": base64Image
+              }
+            ]
+          }
+        ]
+      }),
+    );
+
+    setState(() {
+      _loading = false;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _result = data["choices"][0]["message"]["content"];
+      } else {
+        _result = "خطأ: ${response.body}";
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("اختبار Kimi 2.5 – الصور")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            if (_image != null)
+              Image.file(_image!, height: 200),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: pickImage,
+              child: const Text("اختيار صورة"),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _loading ? null : sendToKimi,
+              child: const Text("تحليل الصورة"),
+            ),
+            const SizedBox(height: 16),
+            if (_loading) const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  _result,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
