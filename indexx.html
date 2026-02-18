@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Works</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<h1>قائمة الأعمال</h1>
+<div id="works"></div>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://hmamaaqtnzevrrmgtgxk.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtYW1hYXF0bnpldnJybWd0Z3hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTgzMDAsImV4cCI6MjA3NzkzNDMwMH0.tk_S2URpkYvf8xnsPJl3Dqh4jzKwhVm0alWl8oHo-SE"
+);
+
+async function loadWorks() {
+  const { data, error } = await supabase
+    .from("works")
+    .select("*")
+    .eq("is_published", true);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const container = document.getElementById("works");
+
+  data.forEach(work => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <h2>
+        <a href="work.html?slug=${work.slug}">
+          ${work.title_ar}
+        </a>
+      </h2>
+      <p>${work.description || ""}</p>
+      <hr/>
+    `;
+    container.appendChild(div);
+  });
+}
+
+loadWorks();
+</script>
+
+</body>
+</html>
