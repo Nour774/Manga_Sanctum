@@ -1,51 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>Works</title>
+  <meta charset="UTF-8">
+  <title>تجربة get_all_works_with_new</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; direction: rtl; }
+    .section { margin: 20px 0; }
+    .card {
+      border: 1px solid #ccc; padding: 10px; margin: 5px;
+      display: inline-block; width: 200px; text-align: center;
+    }
+    img { max-width: 100%; height: auto; }
+  </style>
 </head>
 <body>
+  <h1>تجربة استعلام get_all_works_with_new</h1>
 
-<h1>قائمة الأعمال</h1>
-<div id="works"></div>
+  <div class="section">
+    <h2>الأحدث (new)</h2>
+    <div id="new"></div>
+  </div>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://hmamaaqtnzevrrmgtgxk.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtYW1hYXF0bnpldnJybWd0Z3hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTgzMDAsImV4cCI6MjA3NzkzNDMwMH0.tk_S2URpkYvf8xnsPJl3Dqh4jzKwhVm0alWl8oHo-SE"
-);
+  <div class="section">
+    <h2>كل الأعمال (all)</h2>
+    <div id="all"></div>
+  </div>
 
-async function loadWorks() {
-  const { data, error } = await supabase
-    .from("works")
-    .select("*")
-    .eq("is_published", true);
+  <script>
+    // ضع هنا بيانات مشروعك من Supabase
+    const SUPABASE_URL = "https://hmamaaqtnzevrrmgtgxk.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtYW1hYXF0bnpldnJybWd0Z3hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTgzMDAsImV4cCI6MjA3NzkzNDMwMH0.tk_S2URpkYvf8xnsPJl3Dqh4jzKwhVm0alWl8oHo-SE";
 
-  if (error) {
-    console.error(error);
-    return;
-  }
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const container = document.getElementById("works");
+    async function loadWorks() {
+      const { data, error } = await supabase.rpc('get_all_works_with_new');
+      if (error) {
+        console.error(error);
+        return;
+      }
 
-  data.forEach(work => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <h2>
-        <a href="work.html?slug=${work.slug}">
-          ${work.title_ar}
-        </a>
-      </h2>
-      <p>${work.description || ""}</p>
-      <hr/>
-    `;
-    container.appendChild(div);
-  });
-}
+      // عرض قسم new
+      const newDiv = document.getElementById('new');
+      data.new.forEach(work => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${work.cover_url}" alt="${work.title_ar}">
+          <h3>${work.title_ar}</h3>
+          <p>${work.title_en}</p>
+          <p>عدد الفصول: ${work.chapter_count}</p>
+          <p>وسوم: ${work.tags ? work.tags.join(', ') : ''}</p>
+        `;
+        newDiv.appendChild(card);
+      });
 
-loadWorks();
-</script>
+      // عرض قسم all
+      const allDiv = document.getElementById('all');
+      data.all.forEach(work => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${work.cover_url}" alt="${work.title_ar}">
+          <h3>${work.title_ar}</h3>
+          <p>${work.title_en}</p>
+          <p>عدد الفصول: ${work.chapter_count}</p>
+          <p>وسوم: ${work.tags ? work.tags.join(', ') : ''}</p>
+        `;
+        allDiv.appendChild(card);
+      });
+    }
 
+    loadWorks();
+  </script>
 </body>
 </html>
