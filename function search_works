@@ -1,0 +1,146 @@
+create function search_works(
+  p_page int,
+  p_work_type text default null,
+  p_sort_by text default 'last_chapter_date',
+  p_tags text[] default null,
+  p_status text default null,
+  p_search text default null,
+  p_age_rating text default null,
+  p_include_inappropriate boolean default false
+)
+returns json
+language plpgsql
+as $$
+declare
+  total_count int;
+  total_pages int;
+  result json;
+begin
+
+select count(*)
+into total_count
+from works w
+join projects p on p.id = w.project_id
+where w.is_published = true
+and p.is_active = true
+
+and (p_work_type is null or w.work_type = p_work_type)
+and (p_status is null or w.status = p_status)
+and (p_age_rating is null or w.age_rating = p_age_rating)
+
+and (
+  p_search is null
+  or (coalesce(w.title_ar,'') || ' ' || coalesce(w.title_en,'')) ilike '%' || p_search || '%'
+)
+
+and (
+  p_tags is null
+  or exists (
+    select 1
+    from work_tags wt
+    join tags t on t.id = wt.tag_id
+    where wt.work_id = w.id
+    and t.name = any(p_tags)
+  )
+)
+
+and (p_include_inappropriate or w.is_inappropriate = false);
+
+total_pages := ceil(total_count / 15.0);
+
+with filtered as (
+
+select
+w.id,
+w.title_ar,
+w.title_en,
+w.slug,
+w.work_type,
+w.status,
+w.age_rating,
+w.cover_path,
+w.chapter_count,
+w.avg_rating,
+w.last_chapter_date,
+w.is_inappropriate,
+p.base_url
+
+from works w
+join projects p on p.id = w.project_id
+
+where w.is_published = true
+and p.is_active = true
+
+and (p_work_type is null or w.work_type = p_work_type)
+and (p_status is null or w.status = p_status)
+and (p_age_rating is null or w.age_rating = p_age_rating)
+
+and (
+  p_search is null
+  or (coalesce(w.title_ar,'') || ' ' || coalesce(w.title_en,'')) ilike '%' || p_search || '%'
+)
+
+and (
+  p_tags is null
+  or exists (
+    select 1
+    from work_tags wt
+    join tags t on t.id = wt.tag_id
+    where wt.work_id = w.id
+    and t.name = any(p_tags)
+  )
+)
+
+and (p_include_inappropriate or w.is_inappropriate = false)
+
+order by
+case when p_sort_by='last_chapter_date' then w.last_chapter_date end desc,
+case when p_sort_by='avg_rating' then w.avg_rating end desc,
+case when p_sort_by='chapter_count' then w.chapter_count end desc,
+w.last_chapter_date desc
+
+limit 15
+offset (p_page-1)*15
+
+)
+
+select json_agg(
+json_build_object(
+
+'title_ar',f.title_ar,
+'title_en',f.title_en,
+'slug',f.slug,
+'work_type',f.work_type,
+'status',f.status,
+'age_rating',f.age_rating,
+'cover_url',f.base_url || f.cover_path,
+'chapter_count',f.chapter_count,
+'avg_rating',f.avg_rating,
+'last_chapter_date',f.last_chapter_date,
+'is_inappropriate',f.is_inappropriate,
+
+'tags',
+coalesce(tags.tags,'[]'::json)
+
+))
+into result
+
+from filtered f
+
+left join lateral (
+
+select json_agg(t.name) tags
+from work_tags wt
+join tags t on t.id = wt.tag_id
+where wt.work_id = f.id
+
+) tags on true;
+
+return json_build_object(
+'total_pages',total_pages,
+'page',p_page,
+'works',coalesce(result,'[]'::json)
+);
+
+end;
+$$;
